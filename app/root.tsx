@@ -1,4 +1,4 @@
-import { LinksFunction, json } from "@remix-run/node";
+import { LinksFunction, json, redirect } from "@remix-run/node";
 import {
   Form,
   Links,
@@ -6,11 +6,11 @@ import {
   Scripts,
   ScrollRestoration,
   Outlet,
-  Link,
+  NavLink,
   useLoaderData,
 } from "@remix-run/react";
 
-import { getContacts } from "./data";
+import { getContacts, createEmptyContact } from "./data";
 
 import appStylesHref from "./app.css?url";
 
@@ -22,6 +22,12 @@ export const loader = async () => {
   const contacts = await getContacts();
 
   return json({ contacts });
+};
+
+export const action = async () => {
+  const contact = await createEmptyContact();
+
+  return redirect(`contact/${contact.id}/edit`);
 };
 
 export default function App() {
@@ -57,7 +63,12 @@ export default function App() {
               <ul>
                 {contacts.map((contact) => (
                   <li key={contact.id}>
-                    <Link to={`contacts/${contact.id}`}>
+                    <NavLink
+                      className={({ isActive, isPending }) =>
+                        isActive ? "active" : isPending ? "pending" : ""
+                      }
+                      to={`contacts/${contact.id}`}
+                    >
                       {contact.first || contact.last ? (
                         <>
                           {contact.first} {contact.last}
@@ -66,7 +77,7 @@ export default function App() {
                         <i>No Name</i>
                       )}{" "}
                       {contact.favorite ? <span>★</span> : null}
-                    </Link>
+                    </NavLink>
                   </li>
                 ))}
               </ul>
